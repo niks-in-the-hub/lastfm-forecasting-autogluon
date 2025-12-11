@@ -4,6 +4,8 @@ import glob
 import pickle
 from autogluon.timeseries import TimeSeriesDataFrame
 
+import numpy as np
+
 
 def run_forecasting(tsv_folder_path):
     csv_files = glob.glob(os.path.join(tsv_folder_path, "*.csv"))
@@ -19,5 +21,36 @@ def run_forecasting(tsv_folder_path):
         best_model = pickle.load(f)
 
     forecast = best_model.predict(ts_df, prediction_length=90)
+
+    # Convert to Pandas DataFrame
+    forecast_df = forecast.to_data_frame().reset_index()
+
+    # Print and save
     print("\n===== Forecast for Next 90 Days =====")
-    print(forecast)
+    print(forecast_df)
+
+    # Save forecast to CSV in the current working directory
+    output_file = os.path.join(os.getcwd(), "forecast_output.csv")
+    forecast_df.to_csv(output_file, index=False)
+
+    print(f"\n Forecast written to: {output_file}")
+    postprocess_forecast_data(output_file)
+
+
+
+
+
+def postprocess_forecast_data(file_path):
+    # 1. Read the CSV file
+    df = pd.read_csv(file_path)
+
+    # 2. Keep only the specified columns and rename them
+    df_filtered = df[['timestamp', '0.3', '0.5', '0.9']].copy()
+    df_filtered.rename(columns={'0.3': 'p_30', '0.5': 'forecast(p_50)', '0.9': 'p_90'}, inplace=True)
+
+    # 3. Round off numbers to the nearest higher integer for specified columns
+    columns_to_round = ['p_30', 'forecast(p_50)', 'p_90']
+    for col in columns_to_round:
+        df_filtered[col] = np.ceil(df_filtered[col])
+
+    df_filtered.to_csv('postprocessed_forecast_output.csv', index=False)

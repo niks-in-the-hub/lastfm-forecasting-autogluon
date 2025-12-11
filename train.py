@@ -26,4 +26,4 @@ def run_training(tsv_folder_path):
     with open("best_model.pkl", "wb") as f:
         pickle.dump(model_object, f)
 
-    print(f"\n✅ Training completed and best model saved as best_model.pkl")
+    print(f"\n Training completed and best model saved as best_model.pkl")
