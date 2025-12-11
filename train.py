@@ -17,7 +17,7 @@ def run_training(tsv_folder_path):
 
     ts_df = TimeSeriesDataFrame.from_data_frame(df, id_column='item_id', timestamp_column='timestamp')
 
-    predictor = TimeSeriesPredictor(target="target", prediction_length=90, freq="D", eval_metric="MASE")
+    predictor = TimeSeriesPredictor(target="target", prediction_length=90, freq="D", eval_metric="RMSE")
     predictor.fit(ts_df, presets="best_quality", hyperparameters={"DeepAR": {}, "AutoARIMA": {}}, time_limit=600)
 
     best_model_name = predictor.model_best
