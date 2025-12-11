@@ -2,7 +2,8 @@ import os
 from utils import tsv_to_parquet, inspect_parquet_folder
 from data_generation import data_generation
 from pre_process import fill_missing_dates, validate_date_continuity
-
+from train import run_training
+from predict import run_forecasting
 from pyspark.sql import SparkSession
 
 
@@ -61,6 +62,9 @@ def main():
 
     print(f"\n Final results written to: {tsv_final_output}\n")
 
+    # Run training and forecasting using TSV outputs
+    run_training(tsv_final_output)
+    run_forecasting(tsv_final_output)
 
 if __name__ == "__main__":
     main()
