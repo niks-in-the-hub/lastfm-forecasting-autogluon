@@ -1,4 +1,5 @@
 import pandas as pd
+from pyspark.sql import functions as F
 
 def fill_missing_dates(df):
     """
@@ -55,3 +56,57 @@ def fill_missing_dates(df):
     result = result[['date', 'number_of_sessions']]
 
     return result
+
+
+
+def validate_date_continuity(df):
+    """
+    Validates that:
+      1) All dates are unique (no duplicates)
+      2) All dates between the min and max are present (no missing days)
+
+    Input:
+      df: Spark DataFrame with columns ['date', 'number_of_sessions']
+
+    Prints results directly.
+    """
+
+    # Convert date column to proper date type (safe even if already a date)
+    df = df.withColumn("date", F.to_date("date"))
+
+    # Check for duplicate dates
+    duplicate_count = (
+        df.groupBy("date")
+          .count()
+          .filter(F.col("count") > 1)
+          .count()
+    )
+
+    if duplicate_count == 0:
+        print(" PASS: No duplicate dates found.")
+    else:
+        print(f" FAIL: {duplicate_count} duplicate date(s) found!")
+
+    # Check for missing dates
+    date_stats = df.agg(
+        F.min("date").alias("min_date"),
+        F.max("date").alias("max_date"),
+        F.count("date").alias("row_count")
+    ).collect()[0]
+
+    min_date = date_stats["min_date"]
+    max_date = date_stats["max_date"]
+    row_count = date_stats["row_count"]
+
+    # Expected number of dates in full range
+    expected_days = (max_date - min_date).days + 1
+
+    if expected_days == row_count:
+        print(" PASS: All dates from min(date) to max(date) are present.")
+    else:
+        missing = expected_days - row_count
+        print(f" FAIL: {missing} date(s) missing between {min_date} and {max_date}.")
+
+    # Optional summary print
+    print(f"Date range: {min_date} → {max_date}")
+    print(f"Rows present: {row_count}, Rows expected: {expected_days}")

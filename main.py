@@ -1,7 +1,7 @@
 import os
 from utils import tsv_to_parquet, inspect_parquet_folder
 from data_generation import data_generation
-from pre_process import fill_missing_dates
+from pre_process import fill_missing_dates, validate_date_continuity
 
 from pyspark.sql import SparkSession
 
@@ -47,6 +47,8 @@ def main():
     pre_processed_df = spark.createDataFrame(pre_processed_df)
 
     pre_processed_df.show(10)
+
+    validate_date_continuity(pre_processed_df)
 
     # Save results as TSV
     (
