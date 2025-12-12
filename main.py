@@ -8,6 +8,16 @@ from pyspark.sql import SparkSession
 import argparse
 
 def parse_args():
+    """
+    This function defines the required input and output paths used
+    throughout process.
+
+    Returns:-
+    argparse.Namespace
+        Parsed command-line arguments containing:
+        - input: path to the input TSV file
+        - output: path to the output directory
+    """
     parser = argparse.ArgumentParser(description="PySpark local job")
     
     parser.add_argument(
@@ -28,7 +38,20 @@ def parse_args():
 
 def main():
     """
-    Main ETL + analysis pipeline for LastFM dataset.
+    Run the full ETL, preprocessing, training, and forecasting pipeline.
+
+    This function orchestrates the end-to-end workflow:
+      1. Initialize a SparkSession
+      2. Parse user-provided command-line arguments
+      3. Convert raw TSV data to Parquet format
+      4. Load and inspect the Parquet dataset
+      5. Generate user-level time series data
+      6. Fill missing dates and validate date continuity
+      7. Persist processed data for downstream ML steps
+      8. Train a model and generate forecasts
+
+    The pipeline is designed to be run as a standalone script for
+    local experimentation
     """
     spark = SparkSession.builder \
         .appName("ML Challenge") \

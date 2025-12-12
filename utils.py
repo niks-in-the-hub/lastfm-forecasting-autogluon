@@ -2,9 +2,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType
 
 
-# ------------------------------------
-# 1. Schema definition
-# ------------------------------------
+# Schema definition
 LASTFM_SCHEMA = StructType([
     StructField("user_id", StringType(), True),
     StructField("timestamp", StringType(), True),
@@ -14,9 +12,7 @@ LASTFM_SCHEMA = StructType([
     StructField("track_name", StringType(), True),
 ])
 
-# ------------------------------------
-# 2. Central SparkSession builder
-# ------------------------------------
+# SparkSession builder
 def create_spark(app_name: str = "LastFM ETL"):
     """
     Creates (or returns existing) SparkSession with consistent configuration.
@@ -34,14 +30,12 @@ def create_spark(app_name: str = "LastFM ETL"):
         .getOrCreate()
     )
 
-    # Reduce log noise
+    # To reduce log noise
     spark.sparkContext.setLogLevel("ERROR")
     return spark
 
 
-# ------------------------------------
-# 3. TSV → Parquet Conversion
-# ------------------------------------
+# TSV to Parquet Conversion
 def tsv_to_parquet(input_path: str, output_path: str):
     """
     Reads a TSV file using the predefined LASTFM_SCHEMA
@@ -62,9 +56,7 @@ def tsv_to_parquet(input_path: str, output_path: str):
     print(f"TSV -> Parquet conversion complete!\n   Output folder: {output_path}")
 
 
-# ------------------------------------
-# 4. Inspect Parquet Folder
-# ------------------------------------
+# Inspect parquet folder before creating df
 def inspect_parquet_folder(input_path: str):
     """
     Loads parquet files into a DataFrame,

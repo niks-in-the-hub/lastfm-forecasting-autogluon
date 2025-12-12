@@ -26,7 +26,7 @@ def fill_missing_dates(df):
     # Prepare output list
     output_frames = []
 
-    # Process per user_id (because you may have ties)
+    # Process per user_id (because there could be ties)
     for user in df['user_id'].unique():
         # Filter user
         user_df = df[df['user_id'] == user].set_index('date')
@@ -71,7 +71,7 @@ def validate_date_continuity(df):
     Prints results directly.
     """
 
-    # Convert date column to proper date type (safe even if already a date)
+    # Convert date column to proper date type (works even if col already a date)
     df = df.withColumn("date", F.to_date("date"))
 
     # Check for duplicate dates
