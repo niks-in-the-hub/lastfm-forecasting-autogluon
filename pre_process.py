@@ -1,22 +1,19 @@
 import pandas as pd
-from pyspark.sql import functions as F
+from pyspark.sql import functions as F, DataFrame
 
-def fill_missing_dates(df):
+def fill_missing_dates(df: pd.DataFrame) -> pd.DataFrame:
     """
     Ensures all dates between min and max appear in the dataframe.
     Missing dates receive number_of_sessions = 0.
 
-    Parameters
-    ----------
+    Parameters:-
     df : pandas.DataFrame
-        Must contain columns: ['user_id', 'date', 'number_of_sessions']
+        Input pandas dataframe
 
-    Returns
-    -------
+    Returns:-
     pandas.DataFrame
         With all dates present for each user, missing dates filled with 0.
     """
-
     # Ensure date column is datetime
     df['date'] = pd.to_datetime(df['date'])
 
@@ -59,18 +56,23 @@ def fill_missing_dates(df):
 
 
 
-def validate_date_continuity(df):
+def validate_date_continuity(df: DataFrame) -> None:
     """
     Validates that:
       1) All dates are unique (no duplicates)
       2) All dates between the min and max are present (no missing days)
 
-    Input:
-      df: Spark DataFrame with columns ['date', 'number_of_sessions']
+    Parameters:-
+    df : pyspark.sql.DataFrame
+        Spark DataFrame containing the columns:
+        - date
+        - number_of_sessions
 
-    Prints results directly.
+    Returns:-
+    None
+        This function performs validation checks and prints results,
+        but does not return a value.
     """
-
     # Convert date column to proper date type (works even if col already a date)
     df = df.withColumn("date", F.to_date("date"))
 

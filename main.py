@@ -8,17 +8,17 @@ from train import run_training
 from predict import run_forecasting
 from pyspark.sql import SparkSession
 import argparse
+from argparse import Namespace
 
-def parse_args():
+def parse_args() -> Namespace:
     """
-    This function defines the required input and output paths used
-    throughout process.
+    Parse command-line arguments for the pipeline.
 
     Returns:-
     argparse.Namespace
-        Parsed command-line arguments containing:
-        - input: path to the input TSV file
-        - output: path to the output directory
+        Parsed arguments containing:
+        - input : path to the input TSV file
+        - output : base output directory
     """
     parser = argparse.ArgumentParser(description="PySpark local job")
     
@@ -38,7 +38,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     """
     Run the full ETL, preprocessing, training, and forecasting pipeline.
 
@@ -51,9 +51,11 @@ def main():
       6. Fill missing dates and validate date continuity
       7. Persist processed data for downstream ML steps
       8. Train a model and generate forecasts
-
-    The pipeline is designed to be run as a standalone script for
-    local experimentation
+    
+    Returns:-
+    None
+        The pipeline is designed to be run as a standalone script for
+        local experimentation
     """
     spark = SparkSession.builder \
         .appName("ML Challenge") \

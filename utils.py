@@ -1,6 +1,6 @@
-from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.types import StructType, StructField, StringType
-
+from typing import Tuple
 
 # Schema definition
 LASTFM_SCHEMA = StructType([
@@ -13,9 +13,17 @@ LASTFM_SCHEMA = StructType([
 ])
 
 # SparkSession builder
-def create_spark(app_name: str = "LastFM ETL"):
+def create_spark(app_name: str = "LastFM ETL") -> SparkSession:
     """
     Creates (or returns existing) SparkSession with consistent configuration.
+
+    Parameters:-
+    app_name : str, optional
+        Name of the Spark application.
+
+    Returns:-
+    pyspark.sql.SparkSession
+        An active SparkSession instance.
     """
     spark = (
         SparkSession.builder
@@ -36,10 +44,20 @@ def create_spark(app_name: str = "LastFM ETL"):
 
 
 # TSV to Parquet Conversion
-def tsv_to_parquet(input_path: str, output_path: str):
+def tsv_to_parquet(input_path: str, output_path: str) -> None:
     """
     Reads a TSV file using the predefined LASTFM_SCHEMA
     and writes it as a Parquet dataset.
+
+    Parameters:-
+    input_path : str
+        Path to the input TSV file.
+    output_path : str
+        Destination directory for the Parquet output.
+
+    Returns:-
+    None
+        This function performs I/O only and does not return a value.
     """
     spark = create_spark("TSV to Parquet Conversion")
 
@@ -57,11 +75,22 @@ def tsv_to_parquet(input_path: str, output_path: str):
 
 
 # Inspect parquet folder before creating df
-def inspect_parquet_folder(input_path: str):
+def inspect_parquet_folder(input_path: str) -> Tuple[DataFrame, int, int]:
     """
     Loads parquet files into a DataFrame,
     prints schema + sample rows,
     and returns (df, row_count, col_count).
+
+
+    Parameters:-
+    input_path : str
+        Path to the Parquet folder.
+
+    Returns:-
+    Tuple[pyspark.sql.DataFrame, int, int]
+        - DataFrame: Loaded Parquet data
+        - int: Number of rows
+        - int: Number of columns
     """
     spark = create_spark("Inspect Parquet Folder")
 
@@ -69,16 +98,16 @@ def inspect_parquet_folder(input_path: str):
 
     df = spark.read.parquet(input_path)
 
-    print("\n===== DATAFRAME SCHEMA =====")
+    print("\n-- DATAFRAME SCHEMA --")
     df.printSchema()
 
-    print("\n===== SAMPLE ROWS =====")
+    print("\n-- SAMPLE ROWS --")
     df.show(10, truncate=False)
 
     row_count = df.count()
     col_count = len(df.columns)
 
-    print("\n===== SUMMARY =====")
+    print("\n-- SUMMARY --")
     print(f"Rows: {row_count}")
     print(f"Columns: {col_count}\n")
 

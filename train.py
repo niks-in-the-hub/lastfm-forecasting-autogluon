@@ -5,8 +5,28 @@ from autogluon.timeseries import TimeSeriesPredictor, TimeSeriesDataFrame
 import pickle
 
 
-def run_training(tsv_folder_path):
+def run_training(tsv_folder_path: str) -> None:
+    """
+    Train a time series forecasting model using AutoGluon.
 
+    This function locates the file in the specified directory,
+    prepares it for time series modeling,
+    trains multiple forecasting models using AutoGluon,
+    and saves the best performing model to disk.
+
+    The input file is expected to contain at least two columns:
+      - date   : a date column
+      - target : numeric value to forecast (number_of_sessions)
+
+    Parameters:-
+    tsv_folder_path : str
+        Path to a folder containing one or more tab-separated CSV files.
+
+    Returns:-
+    None
+        This function performs model training and serialization but does
+        not return a value.
+    """
     # Find latest .csv file (tab-separated)
     csv_files = glob.glob(os.path.join(tsv_folder_path, "*.csv"))
     latest_file = max(csv_files, key=os.path.getmtime)

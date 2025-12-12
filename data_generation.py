@@ -1,20 +1,38 @@
-from pyspark.sql import functions as F
+from pyspark.sql import DataFrame, functions as F
 from pyspark.sql.window import Window
 
-def data_generation(df):
+def data_generation(df: DataFrame) -> DataFrame:
+    """
+    Generate daily session counts for the most active user(s).
 
+    Parameters:-
+    df : pyspark.sql.DataFrame
+        Input DataFrame containing at least the following columns:
+        - user_id
+        - timestamp
+
+    Returns:-
+    pyspark.sql.DataFrame
+        A DataFrame with columns:
+        - user_id
+        - date
+        - number_of_sessions
+
+        Each row represents the number of distinct listening sessions
+        for a given user on a specific date.
+    """
     spark = df.sparkSession
-    spark.conf.set("spark.sql.shuffle.partitions", "50")   # reduce shuffle load
-    spark.conf.set("spark.sql.adaptive.enabled", True)     # let Spark optimize
+    spark.conf.set("spark.sql.shuffle.partitions", "50")
+    spark.conf.set("spark.sql.adaptive.enabled", True)
 
-    # 1: Parse timestamps
+    # Parse timestamps
     df_parsed = df.withColumn(
         "ts", F.to_timestamp("timestamp")
     ).withColumn(
         "date", F.to_date("ts")
     )
 
-    # 2: Window (safe because per user, but still expensive)
+    # Window per user
     w = Window.partitionBy("user_id").orderBy("ts")
 
     df_with_diff = df_parsed.withColumn(
@@ -24,7 +42,7 @@ def data_generation(df):
         (F.col("ts").cast("long") - F.col("prev_ts").cast("long"))/60
     )
 
-    # 3: New session flag
+    # New session flag
     df_sessionized = df_with_diff.withColumn(
         "is_new_session",
         F.when(F.col("prev_ts").isNull(), 1)
@@ -32,13 +50,13 @@ def data_generation(df):
          .otherwise(0)
     )
 
-    # 4: Cumulative sum session_id
+    # Cumulative sum session_id
     df_sessionized = df_sessionized.withColumn(
         "session_id",
         F.sum("is_new_session").over(w)
     )
 
-    # 5: Sessions per user
+    # Sessions per user
     user_session_counts = (
         df_sessionized
         .select("user_id", "session_id").distinct()
@@ -47,20 +65,20 @@ def data_generation(df):
         .withColumnRenamed("count", "total_sessions")
     )
 
-    # *** NEW: Compute max sessions WITHOUT .first() ***
+    # Compute max sessions
     max_sessions_df = user_session_counts.agg(F.max("total_sessions").alias("max_sessions"))
     
-    # join instead of collect()
+    # Join
     top_users = user_session_counts.join(
         max_sessions_df,
         on=F.col("total_sessions") == F.col("max_sessions"),
         how="inner"
     ).select("user_id").distinct()
 
-    # 7: Filter only top users
+    # Filter only top users
     df_top = df_sessionized.join(top_users, "user_id")
 
-    # 8: daily session aggregation (no global sort)
+    # Daily session aggregation
     daily_sessions = (
         df_top.select("user_id", "date", "session_id")
         .distinct()

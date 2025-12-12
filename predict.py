@@ -7,7 +7,25 @@ from autogluon.timeseries import TimeSeriesDataFrame
 import numpy as np
 
 
-def run_forecasting(tsv_folder_path, forecast_results_output_path):
+def run_forecasting(tsv_folder_path: str, forecast_results_output_path: str) -> None:
+    """
+    Run time series forecasting using a previously trained model.
+
+    This function loads the most recently modified TSV/CSV file from the
+    provided directory, prepares it for forecasting, loads the serialized
+    best model, generates a 90-day forecast, and writes the results to disk.
+
+    Parameters:-
+    tsv_folder_path : str
+        Path to a directory containing tab-separated CSV files.
+    forecast_results_output_path : str
+        Directory where forecast outputs will be written.
+
+    Returns:-
+    None
+        This function performs forecasting and file I/O but does not
+        return a value.
+    """
     csv_files = glob.glob(os.path.join(tsv_folder_path, "*.csv"))
     latest_file = max(csv_files, key=os.path.getmtime)
 
@@ -38,7 +56,24 @@ def run_forecasting(tsv_folder_path, forecast_results_output_path):
 
 
 
-def postprocess_forecast_data(file_path, forecast_results_output_path):
+def postprocess_forecast_data(file_path: str, forecast_results_output_path: str) -> None:
+    """
+    Post-process raw forecast results by filtering quantiles and rounding values.
+
+    This function keeps only selected quantiles from the forecast output,
+    renames columns for clarity, rounds values up to the nearest integer,
+    and writes a cleaned CSV file to disk.
+
+    Parameters:-
+    file_path : str
+        Path to the raw forecast CSV file.
+    forecast_results_output_path : str
+        Directory where the post-processed output will be written.
+
+    Returns:-
+    None
+        This function performs data transformation and file I/O only.
+    """
     # Read the CSV file
     df = pd.read_csv(file_path)
 
