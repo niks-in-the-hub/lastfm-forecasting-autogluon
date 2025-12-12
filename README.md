@@ -71,8 +71,14 @@ Predict the next 90 days and output results as:
 * forecast_output.csv (raw forecast)
 * postprocessed_forecast_output.csv (rounded, renamed columns)
 
+## 4. Sample output
+- The sample output can be viewed in-
+```bash
+lastfm-forecasting-autogluon/
+├── sample_output
+```
 
-## 4. Additional Notes
+## 5. Additional Notes
 - The project assumes daily frequency time series.
 - Quantile forecasts (p_30, p_50, p_90) are supported and saved.
 - The best model is stored as best_model.pkl and can be reused without retraining.
