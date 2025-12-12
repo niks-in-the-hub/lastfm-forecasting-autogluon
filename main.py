@@ -1,3 +1,5 @@
+# The top 1 user is user_000833
+
 import os
 from utils import tsv_to_parquet, inspect_parquet_folder
 from data_generation import data_generation
